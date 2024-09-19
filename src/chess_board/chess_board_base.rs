@@ -154,7 +154,6 @@ impl ChessBoard {
                     0
                 },
             );
-            println!("{}", piece.get_raw());
             if piece.get_raw() == 0b111 {
                 continue;
             }
