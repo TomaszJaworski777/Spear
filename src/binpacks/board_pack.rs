@@ -1,5 +1,9 @@
+use bytemuck::{Pod, Zeroable};
+
 use crate::{base_structures::Side, Bitboard, ChessBoard};
 
+#[repr(C)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct ChessBoardPacked {
     board: [Bitboard; 4],
     side_to_move: Side,
@@ -7,8 +11,15 @@ pub struct ChessBoardPacked {
     result: i8,
 }
 
+#[allow(unused)]
 impl ChessBoardPacked {
     pub fn from_board(board: &ChessBoard, score: f32) -> Self {
+        let score = if board.side_to_move() == Side::WHITE {
+            score
+        } else {
+            1.0 - score
+        };
+
         Self {
             board: board_to_compressed(board),
             side_to_move: board.side_to_move(),
@@ -70,3 +81,6 @@ fn board_to_compressed(board: &ChessBoard) -> [Bitboard; 4] {
 
     result
 }
+
+unsafe impl Zeroable for ChessBoardPacked {}
+unsafe impl Pod for ChessBoardPacked {}
