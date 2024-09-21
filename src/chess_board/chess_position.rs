@@ -2,7 +2,7 @@ use crate::{Move, MoveHistory, FEN};
 
 use super::ChessBoard;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Hash)]
 pub struct ChessPosition {
     board: ChessBoard,
     history: MoveHistory,

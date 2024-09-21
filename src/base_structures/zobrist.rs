@@ -5,7 +5,7 @@ use std::{
 
 use crate::{Piece, Square};
 
-#[derive(Copy, Clone, Default, PartialEq)]
+#[derive(Copy, Clone, Default, PartialEq, Hash)]
 pub struct ZobristKey(u64);
 impl ZobristKey {
     pub const NULL: Self = Self(0);

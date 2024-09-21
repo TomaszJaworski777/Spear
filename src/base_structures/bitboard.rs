@@ -9,7 +9,7 @@ use std::{
 
 use super::square::Square;
 
-#[derive(Copy, Clone, Default, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Default, PartialEq, PartialOrd, Hash)]
 pub struct Bitboard(u64);
 impl Bitboard {
     pub const RANK_1: Self = Self::from_raw(0x00000000000000FF);

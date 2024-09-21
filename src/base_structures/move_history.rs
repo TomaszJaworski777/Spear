@@ -1,6 +1,6 @@
 use super::ZobristKey;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Hash)]
 pub struct MoveHistory([ZobristKey; 100], usize);
 impl MoveHistory {
     pub fn new() -> Self {

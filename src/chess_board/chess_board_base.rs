@@ -7,7 +7,7 @@ use super::{
     chess_board_state::{ChessBoardState, PHASE_VALUES},
 };
 
-#[derive(Clone, Copy, Default, PartialEq)]
+#[derive(Clone, Copy, Default, PartialEq, Hash)]
 pub struct ChessBoard {
     pub(super) pieces: ChessBoardPieces,
     pub(super) state: ChessBoardState,

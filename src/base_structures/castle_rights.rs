@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, Result};
 
-#[derive(Copy, Clone, Default, PartialEq)]
+#[derive(Copy, Clone, Default, PartialEq, Hash)]
 pub struct CastleRights(u8);
 impl CastleRights {
     pub const WHITE_QUEEN: Self = Self(0b1000);

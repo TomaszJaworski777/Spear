@@ -5,7 +5,7 @@ use std::{
 
 use super::bitboard::Bitboard;
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Hash)]
 pub struct Square(u8);
 
 impl Default for Square {
