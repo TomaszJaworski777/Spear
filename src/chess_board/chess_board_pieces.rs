@@ -8,7 +8,7 @@ pub struct ChessBoardPieces {
 impl ChessBoardPieces {
     #[inline]
     pub fn get_occupancy_for_side<const WHITE: bool>(&self) -> Bitboard {
-        self.occupancy[usize::from(WHITE)]
+        self.occupancy[usize::from(!WHITE)]
     }
 
     #[inline]
@@ -38,13 +38,13 @@ impl ChessBoardPieces {
     #[inline]
     pub fn set_piece_on_square<const WHITE: bool>(&mut self, square: Square, piece: Piece) {
         self.pieces[piece.get_raw() as usize].set_bit(square);
-        self.occupancy[usize::from(WHITE)].set_bit(square);
+        self.occupancy[usize::from(!WHITE)].set_bit(square);
     }
 
     #[inline]
     pub fn remove_piece_on_square<const WHITE: bool>(&mut self, square: Square, piece: Piece) {
         self.pieces[piece.get_raw() as usize].pop_bit(square);
-        self.occupancy[usize::from(WHITE)].pop_bit(square);
+        self.occupancy[usize::from(!WHITE)].pop_bit(square);
     }
 }
 
