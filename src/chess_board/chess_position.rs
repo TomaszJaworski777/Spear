@@ -27,6 +27,14 @@ impl ChessPosition {
     }
 
     #[inline]
+    pub fn from_board(board: &ChessBoard) -> Self {
+        Self {
+            board: *board,
+            history: MoveHistory::new(),
+        }
+    }
+
+    #[inline]
     pub fn board(&self) -> &ChessBoard {
         &self.board
     }
