@@ -1,7 +1,7 @@
 #[cfg(target_feature = "bmi2")]
 use std::arch::x86_64::_pext_u64;
 
-use once_cell::sync::Lazy;
+use lazy_static::lazy_static;
 
 use crate::{Bitboard, Square};
 
@@ -51,37 +51,35 @@ const ROOK_OCCUPANCY_COUNT: [usize; 64] = {
     result
 };
 
-static ROOK_ATTACKS: Lazy<Vec<Vec<Bitboard>>> = Lazy::new(|| {
-    let mut result = vec![vec![Bitboard::EMPTY; 4096]; 64];
-    for square_index in 0..64 {
-        let square = Square::from_raw(square_index);
-        let attack_mask = mask_rook_attacks(square);
-        let relevant_bit_count = attack_mask.pop_count();
-        let mut index = 0;
-        while index < 1 << relevant_bit_count {
-            let occupancy = generate_occupancy(index, relevant_bit_count as usize, attack_mask);
-
-            #[cfg(not(target_feature = "bmi2"))]
-            let attack_index = (occupancy
-                .wrapping_mul(MAGIC_NUMBERS_ROOK[square.get_raw() as usize].into())
-                >> (64 - relevant_bit_count))
-                .get_raw() as usize;
-
-            #[cfg(target_feature = "bmi2")]
-            let attack_index = unsafe {
-                _pext_u64(
-                    occupancy.get_raw(),
-                    ROOK_MASKS[square_index as usize].get_raw(),
-                ) as usize
-            };
-
-            result[square_index as usize][attack_index] = generate_rook_attacks(square, occupancy);
-            index += 1;
-        }
-    }
-
-    result
-});
+lazy_static! {
+    static ref ROOK_ATTACKS: Vec<Vec<Bitboard>> = {
+        let mut result = vec![vec![Bitboard::EMPTY; 4096]; 64];
+        for square_index in 0..64 {
+                let square = Square::from_raw(square_index);
+                let attack_mask = mask_rook_attacks(square);
+                let relevant_bit_count = attack_mask.pop_count();
+                let mut index = 0;
+                while index < 1 << relevant_bit_count {
+                    let occupancy = generate_occupancy(index, relevant_bit_count as usize, attack_mask);
+                    #[cfg(not(target_feature = "bmi2"))]
+                    let attack_index = (occupancy
+                        .wrapping_mul(MAGIC_NUMBERS_ROOK[square.get_raw() as usize].into())
+                        >> (64 - relevant_bit_count))
+                        .get_raw() as usize;
+                    #[cfg(target_feature = "bmi2")]
+                    let attack_index = unsafe {
+                        _pext_u64(
+                            occupancy.get_raw(),
+                            ROOK_MASKS[square_index as usize].get_raw(),
+                        ) as usize
+                    };
+                    result[square_index as usize][attack_index] = generate_rook_attacks(square, occupancy);
+                    index += 1;
+                }
+            }
+        result
+    };
+}
 
 const fn mask_rook_attacks(square: Square) -> Bitboard {
     let mut result: u64 = 0;
