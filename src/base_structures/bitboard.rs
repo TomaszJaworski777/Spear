@@ -408,3 +408,30 @@ impl Display for Bitboard {
         writeln!(formatter, "{}", self.get_bitboard_string())
     }
 }
+
+pub struct Biterator {
+    board: Bitboard,
+}
+
+impl IntoIterator for Bitboard {
+    type Item = Square;
+    type IntoIter = Biterator;
+
+    #[must_use]
+    fn into_iter(self) -> Self::IntoIter {
+        Biterator { board: self }
+    }
+}
+
+impl Iterator for Biterator {
+    type Item = Square;
+
+    #[must_use]
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.board.is_empty() {
+            None
+        } else {
+            Some(self.board.pop_ls1b_square())
+        }
+    }
+}

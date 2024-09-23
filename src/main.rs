@@ -32,6 +32,19 @@ fn main() {
         ),
     ];
 
+    let (r, _) = Perft::perft::<true, false, false>(&FEN::start_position(), 7);
+    println!("{r}");
+    let mut total_d = 0;
+    for _ in 0..5 {
+        let (_, result_duration) = Perft::perft::<true, false, false>(&FEN::start_position(), 7);
+        total_d += result_duration;
+        println!("{}ms", result_duration);
+    }
+
+    println!("{}ms", total_d / 5);
+
+    return;
+
     println!("Bulk:");
     for _ in 0..2 {
         for (index, fen) in fens.clone().into_iter().enumerate() {

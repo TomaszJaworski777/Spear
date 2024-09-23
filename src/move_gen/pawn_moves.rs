@@ -16,8 +16,8 @@ impl MoveGen {
         ortographic_pins: Bitboard,
         method: &mut F,
     ) {
-        let promotion_rank = Bitboard::RANK_7 >> (board.side_to_move().get_raw() * 40) as u32;
-        let double_push_rank = Bitboard::RANK_2 << (board.side_to_move().get_raw() * 40) as u32;
+        let promotion_rank = if STM_WHITE { Bitboard::RANK_7 } else { Bitboard::RANK_2 };
+        let double_push_rank = if STM_WHITE { Bitboard::RANK_2 } else { Bitboard::RANK_7 };
         let pawns = board.get_piece_mask_for_side::<STM_WHITE>(Piece::PAWN);
 
         let pushable_pawns = pawns & !diagonal_pins;
@@ -60,110 +60,37 @@ fn handle_pawn_pushes<F: FnMut(Move), const STM_WHITE: bool>(
     double_push_rank: Bitboard,
     method: &mut F,
 ) {
-    let pinned_pawns = pushable_pawns & ortographic_pins;
-    let not_pinned_pawns = pushable_pawns & !pinned_pawns;
+    let vertical_pins = ortographic_pins & ortographic_pins.shift_left(8);
+    let pinned_pawns = pushable_pawns & (vertical_pins | vertical_pins.shift_right(8));
+    let pushable_pawns = (pushable_pawns & !ortographic_pins) | pinned_pawns;
+    let promotion_pawns = pushable_pawns & promotion_rank;
+    let double_pushable_pawns = pushable_pawns & double_push_rank;
+    
+    let empty_spaces = !board.get_occupancy();
+    let single_shifted_push_map = if STM_WHITE { push_map.shift_right(8) } else { push_map.shift_left(8) };
+    let double_shifted_push_map = if STM_WHITE { push_map.shift_right(16) } else { push_map.shift_left(16) };
+    let single_shifted_empty = if STM_WHITE { empty_spaces.shift_right(8) } else { empty_spaces.shift_left(8) };
 
-    (not_pinned_pawns & !promotion_rank).map(|pawn_square| {
-        let to_square = if STM_WHITE {
-            pawn_square.shift_left(8)
-        } else {
-            pawn_square.shift_right(8)
-        };
-        if push_map.get_bit(to_square) {
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::QUIET_MOVE,
-            ))
-        }
-    });
+    let single_push_pawns = pushable_pawns & !promotion_pawns & single_shifted_push_map;
+    let targets = if STM_WHITE { single_push_pawns.shift_left(8) } else { single_push_pawns.shift_right(8) };
+    for (from_square, to_square) in single_push_pawns.into_iter().zip(targets) {
+        method(Move::from_squares(from_square, to_square, MoveFlag::QUIET_MOVE))
+    }
 
-    pinned_pawns.map(|pawn_square| {
-        let to_square = if STM_WHITE {
-            pawn_square.shift_left(8)
-        } else {
-            pawn_square.shift_right(8)
-        };
-        if (push_map & ortographic_pins).get_bit(to_square) {
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::QUIET_MOVE,
-            ))
-        }
-    });
+    let double_push_pawns = double_pushable_pawns & single_shifted_empty & double_shifted_push_map;
+    let targets = if STM_WHITE { double_push_pawns.shift_left(16) } else { double_push_pawns.shift_right(16) };
+    for (from_square, to_square) in double_push_pawns.into_iter().zip(targets) {
+        method(Move::from_squares(from_square, to_square, MoveFlag::DOUBLE_PUSH))
+    }
 
-    (not_pinned_pawns & promotion_rank).map(|pawn_square| {
-        let to_square = if STM_WHITE {
-            pawn_square.shift_left(8)
-        } else {
-            pawn_square.shift_right(8)
-        };
-        if push_map.get_bit(to_square) {
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::KNIGHT_PROMOTION,
-            ));
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::BISHOP_PROMOTION,
-            ));
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::ROOK_PROMOTION,
-            ));
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::QUEEN_PROMOTION,
-            ));
-        }
-    });
-
-    (not_pinned_pawns & double_push_rank).map(|pawn_square| {
-        let passing_square = if STM_WHITE {
-            pawn_square.shift_left(8)
-        } else {
-            pawn_square.shift_right(8)
-        };
-        let to_square = if STM_WHITE {
-            pawn_square.shift_left(16)
-        } else {
-            pawn_square.shift_right(16)
-        };
-        if (!board.get_occupancy()).get_bit(passing_square) && push_map.get_bit(to_square) {
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::DOUBLE_PUSH,
-            ))
-        }
-    });
-
-    (pinned_pawns & double_push_rank).map(|pawn_square| {
-        let passing_square = if STM_WHITE {
-            pawn_square.shift_left(8)
-        } else {
-            pawn_square.shift_right(8)
-        };
-        let to_square = if STM_WHITE {
-            pawn_square.shift_left(16)
-        } else {
-            pawn_square.shift_right(16)
-        };
-        if (!board.get_occupancy()).get_bit(passing_square)
-            && (push_map & ortographic_pins).get_bit(to_square)
-        {
-            method(Move::from_squares(
-                pawn_square,
-                to_square,
-                MoveFlag::DOUBLE_PUSH,
-            ))
-        }
-    });
+    let promotion_pawns = promotion_pawns & single_shifted_push_map;
+    let targets = if STM_WHITE { promotion_pawns.shift_left(8) } else { promotion_pawns.shift_right(8) };
+    for (from_square, to_square) in promotion_pawns.into_iter().zip(targets) {
+        method(Move::from_squares(from_square, to_square, MoveFlag::KNIGHT_PROMOTION));
+        method(Move::from_squares(from_square, to_square, MoveFlag::BISHOP_PROMOTION));
+        method(Move::from_squares(from_square, to_square, MoveFlag::ROOK_PROMOTION));
+        method(Move::from_squares(from_square, to_square, MoveFlag::QUEEN_PROMOTION));
+    }
 }
 
 fn handle_pawn_captures<F: FnMut(Move), const STM_WHITE: bool>(
