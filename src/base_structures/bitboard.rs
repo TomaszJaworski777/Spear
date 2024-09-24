@@ -1,3 +1,4 @@
+use bytemuck::{Pod, Zeroable};
 use colored::*;
 use std::{
     fmt::{Display, Formatter, Result},
@@ -408,6 +409,9 @@ impl Display for Bitboard {
         writeln!(formatter, "{}", self.get_bitboard_string())
     }
 }
+
+unsafe impl Zeroable for Bitboard {}
+unsafe impl Pod for Bitboard {}
 
 pub struct Biterator {
     board: Bitboard,

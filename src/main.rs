@@ -62,6 +62,6 @@ fn main() {
             duration += result_duration;
         }
 
-        println!("{}nps", nodes * 1000 / duration);
+        println!("{}ms ({}nps)", duration / 4, nodes * 1000 / duration);
     }
 }

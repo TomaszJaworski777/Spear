@@ -1,9 +1,9 @@
 #[cfg(target_feature = "bmi2")]
 use std::arch::x86_64::_pext_u64;
 
-use once_cell::sync::Lazy;
-
 use crate::{Bitboard, Square};
+
+const BISHOP_ATTACKS: [[Bitboard; 512]; 64] = unsafe { std::mem::transmute(*include_bytes!("attack_binpacks/bishop_attacks.bin")) };
 
 pub struct BishopAttacks;
 impl BishopAttacks {
@@ -50,39 +50,6 @@ const BISHOP_OCCUPANCY_COUNT: [usize; 64] = {
     }
     result
 };
-
-static BISHOP_ATTACKS: Lazy<Vec<Vec<Bitboard>>> = Lazy::new(|| {
-    let mut result = vec![vec![Bitboard::EMPTY; 512]; 64];
-    for square_index in 0..64 {
-        let square = Square::from_raw(square_index);
-        let attack_mask = mask_bishop_attacks(square);
-        let relevant_bit_count = attack_mask.pop_count();
-        let mut index = 0;
-        while index < 1 << relevant_bit_count {
-            let occupancy = generate_occupancy(index, relevant_bit_count as usize, attack_mask);
-
-            #[cfg(not(target_feature = "bmi2"))]
-            let attack_index = (occupancy
-                .wrapping_mul(MAGIC_NUMBERS_BISHOP[square_index as usize].into())
-                >> (64 - relevant_bit_count))
-                .get_raw() as usize;
-
-            #[cfg(target_feature = "bmi2")]
-            let attack_index = unsafe {
-                _pext_u64(
-                    occupancy.get_raw(),
-                    BISHOP_MASKS[square_index as usize].get_raw(),
-                ) as usize
-            };
-
-            result[square_index as usize][attack_index] =
-                generate_bishop_attacks(square, occupancy);
-            index += 1;
-        }
-    }
-
-    result
-});
 
 const fn mask_bishop_attacks(square: Square) -> Bitboard {
     let mut result: u64 = 0;
@@ -131,6 +98,7 @@ const fn mask_bishop_attacks(square: Square) -> Bitboard {
     Bitboard::from_raw(result)
 }
 
+#[allow(unused)]
 fn generate_bishop_attacks(square: Square, occupancy: Bitboard) -> Bitboard {
     let mut result: Bitboard = Bitboard::EMPTY;
     let bishop_position = (square.get_rank() as i32, square.get_file() as i32);
@@ -182,6 +150,7 @@ fn generate_bishop_attacks(square: Square, occupancy: Bitboard) -> Bitboard {
     result
 }
 
+#[allow(unused)]
 fn generate_occupancy(index: usize, bit_count: usize, attack_mask: Bitboard) -> Bitboard {
     let mut result = Bitboard::EMPTY;
     let mut mut_attack_mask = attack_mask;
