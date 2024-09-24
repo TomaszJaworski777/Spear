@@ -14,9 +14,9 @@
 
 | Position | Depth | Nodes | Time | Nps |
 | :-: | :-: | :-: | :-: | :-: |
-| Start Position | 6 | 119.06m | 0.78s | 152.25m |
-| Kiwipete | 5 | 193.69m | 1.14s | 169.60m |
-| Position 3 | 7 | 178.63m | 1.22s | 146.42m |
-| Position 4 | 5 | 15.83m | 0.10s | 155.22m |
-| Position 5 | 5 | 89.94m | 0.54s | 165.94m |
-| Position 6 | 5 | 164.07m | 0.95s | 171.26m |
+| Start Position | 6 | 119.06m | 0.70s | 169.78m |
+| Kiwipete | 5 | 193.69m | 1.08s | 178.51m |
+| Position 3 | 7 | 178.63m | 1.11s | 160.38m |
+| Position 4 | 5 | 15.83m | 0.09s | 172.10m |
+| Position 5 | 5 | 89.94m | 0.49s | 181.05m |
+| Position 6 | 5 | 164.07m | 0.87s | 186.60m |

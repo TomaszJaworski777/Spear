@@ -31,6 +31,7 @@ fn main() {
             6923051137,
         ),
     ];
+
     println!("Bulk:");
     for _ in 0..2 {
         for (index, fen) in fens.clone().into_iter().enumerate() {
