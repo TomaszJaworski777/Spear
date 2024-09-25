@@ -13,3 +13,6 @@ opt-level = 3
 [dependencies]
 colored = "*"
 bytemuck = "1.18.0"
+
+[features]
+pext = []
