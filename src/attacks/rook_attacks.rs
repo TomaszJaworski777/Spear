@@ -3,7 +3,7 @@ use std::arch::x86_64::_pext_u64;
 
 use crate::{Bitboard, Square};
 
-const ROOK_ATTACKS: [[Bitboard; 4096]; 64] = unsafe { std::mem::transmute(*include_bytes!("attack_binpacks/rook_attacks.bin")) };
+const ROOK_ATTACKS: [Bitboard; 4096 * 64] = unsafe { std::mem::transmute(*include_bytes!("attack_binpacks/rook_attacks.bin")) };
 
 pub struct RookAttacks;
 impl RookAttacks {
@@ -21,7 +21,7 @@ impl RookAttacks {
         let index =
             unsafe { _pext_u64(occupancy.get_raw(), ROOK_MASKS[square].get_raw()) as usize };
 
-        ROOK_ATTACKS[square][index]
+        ROOK_ATTACKS[(square * 4096) + index]
     }
 }
 

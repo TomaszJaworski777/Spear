@@ -3,7 +3,7 @@ use std::arch::x86_64::_pext_u64;
 
 use crate::{Bitboard, Square};
 
-const BISHOP_ATTACKS: [[Bitboard; 512]; 64] = unsafe { std::mem::transmute(*include_bytes!("attack_binpacks/bishop_attacks.bin")) };
+const BISHOP_ATTACKS: [Bitboard; 512 * 64] = unsafe { std::mem::transmute(*include_bytes!("attack_binpacks/bishop_attacks.bin")) };
 
 pub struct BishopAttacks;
 impl BishopAttacks {
@@ -21,7 +21,7 @@ impl BishopAttacks {
         let index =
             unsafe { _pext_u64(occupancy.get_raw(), BISHOP_MASKS[square].get_raw()) as usize };
 
-        BISHOP_ATTACKS[square][index]
+        BISHOP_ATTACKS[(square * 512) + index]
     }
 }
 
