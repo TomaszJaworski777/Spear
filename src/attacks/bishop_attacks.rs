@@ -69,7 +69,6 @@ const BISHOP_OCCUPANCY_COUNT: [usize; 64] = {
     result
 };
 
-#[cfg(not(feature = "pext"))]
 const fn mask_bishop_attacks(square: Square) -> Bitboard {
     let mut result: u64 = 0;
     let bishop_position = (square.get_rank() as i32, square.get_file() as i32);
@@ -115,77 +114,6 @@ const fn mask_bishop_attacks(square: Square) -> Bitboard {
     }
 
     Bitboard::from_raw(result)
-}
-
-#[allow(unused)]
-#[cfg(not(feature = "pext"))]
-fn generate_bishop_attacks(square: Square, occupancy: Bitboard) -> Bitboard {
-    let mut result: Bitboard = Bitboard::EMPTY;
-    let bishop_position = (square.get_rank() as i32, square.get_file() as i32);
-
-    let mut rank = bishop_position.0 + 1;
-    let mut file = bishop_position.1 + 1;
-    while rank < 8 && file < 8 {
-        result.set_bit(Square::from_coords(rank as u8, file as u8));
-        if (Square::from_coords(rank as u8, file as u8).get_bit() & occupancy).is_not_empty() {
-            break;
-        }
-        rank += 1;
-        file += 1;
-    }
-
-    rank = bishop_position.0 - 1;
-    file = bishop_position.1 + 1;
-    while rank >= 0 && file < 8 {
-        result.set_bit(Square::from_coords(rank as u8, file as u8));
-        if (Square::from_coords(rank as u8, file as u8).get_bit() & occupancy).is_not_empty() {
-            break;
-        }
-        rank -= 1;
-        file += 1;
-    }
-
-    rank = bishop_position.0 - 1;
-    file = bishop_position.1 - 1;
-    while rank >= 0 && file >= 0 {
-        result.set_bit(Square::from_coords(rank as u8, file as u8));
-        if (Square::from_coords(rank as u8, file as u8).get_bit() & occupancy).is_not_empty() {
-            break;
-        }
-        rank -= 1;
-        file -= 1;
-    }
-
-    rank = bishop_position.0 + 1;
-    file = bishop_position.1 - 1;
-    while rank < 8 && file >= 0 {
-        result.set_bit(Square::from_coords(rank as u8, file as u8));
-        if (Square::from_coords(rank as u8, file as u8).get_bit() & occupancy).is_not_empty() {
-            break;
-        }
-        rank += 1;
-        file -= 1;
-    }
-
-    result
-}
-
-#[allow(unused)]
-#[cfg(not(feature = "pext"))]
-fn generate_occupancy(index: usize, bit_count: usize, attack_mask: Bitboard) -> Bitboard {
-    let mut result = Bitboard::EMPTY;
-    let mut mut_attack_mask = attack_mask;
-    let mut count_index = 0u16;
-    while count_index < bit_count as u16 {
-        let square: Square = mut_attack_mask.pop_ls1b_square();
-        if index & (1usize << count_index) > 0 {
-            result.set_bit(square);
-        }
-
-        count_index += 1;
-    }
-
-    result
 }
 
 #[cfg(not(feature = "pext"))]
