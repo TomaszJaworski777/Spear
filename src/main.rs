@@ -32,6 +32,23 @@ fn main() {
         ),
     ];
 
+    let (_, _) = Perft::perft::<true, false, true>(&FEN::start_position(), 7);
+
+    for _ in 0..2 {
+        let (_, _) =Perft::perft::<false, false, false>(&FEN::start_position(), 6);
+    }
+
+    for _ in 0..5 {
+        let (r, d) =Perft::perft::<false, false, false>(&FEN::start_position(), 6);
+        println!("{}ms ({}nps)", d, r * 1000 / d);
+    }
+
+    for _ in 0..5 {
+        let (r, d) =Perft::perft::<true, false, false>(&FEN::start_position(), 7);
+        println!("{}ms ({}nps)", d, r * 1000 / d);
+    }
+
+    return;
     println!("Bulk:");
     for _ in 0..2 {
         for (index, fen) in fens.clone().into_iter().enumerate() {

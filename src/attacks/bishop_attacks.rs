@@ -1,9 +1,12 @@
-#[cfg(target_feature = "bmi2")]
+#[cfg(feature = "pext")]
 use std::arch::x86_64::_pext_u64;
 
 use crate::{Bitboard, Square};
 
+#[cfg(not(feature = "pext"))]
 const BISHOP_ATTACKS: [Bitboard; 512 * 64] = unsafe { std::mem::transmute(*include_bytes!("attack_binpacks/bishop_attacks.bin")) };
+#[cfg(feature = "pext")]
+const BISHOP_ATTACKS: [Bitboard; 512 * 64] = unsafe { std::mem::transmute(*include_bytes!("attack_binpacks/bishop_attacks_pext.bin")) };
 
 pub struct BishopAttacks;
 impl BishopAttacks {
@@ -11,19 +14,34 @@ impl BishopAttacks {
     pub fn get_bishop_attacks(square: Square, occupancy: Bitboard) -> Bitboard {
         let square = usize::from(square);
 
-        #[cfg(not(target_feature = "bmi2"))]
-        let index = ((occupancy & BISHOP_MASKS[square])
-            .wrapping_mul(MAGIC_NUMBERS_BISHOP[square].into())
-            >> (64 - BISHOP_OCCUPANCY_COUNT[square] as u32))
+        #[cfg(not(feature = "pext"))]
+        let (mask, shift, magic) = BISHOP_MAGICS[square];
+
+        #[cfg(not(feature = "pext"))]
+        let index = ((occupancy & mask)
+            .wrapping_mul(magic)
+            >> shift)
             .get_raw() as usize;
 
-        #[cfg(target_feature = "bmi2")]
+        #[cfg(feature = "pext")]
         let index =
             unsafe { _pext_u64(occupancy.get_raw(), BISHOP_MASKS[square].get_raw()) as usize };
 
         BISHOP_ATTACKS[(square * 512) + index]
     }
 }
+
+#[cfg(not(feature = "pext"))]
+const BISHOP_MAGICS: [(Bitboard, u32, Bitboard); 64] = {
+    let mut result = [(Bitboard::EMPTY, 0, Bitboard::EMPTY); 64];
+    let mut square_index = 0usize;
+    while square_index < 64 {
+        result[square_index] = (BISHOP_MASKS[square_index], 64 - BISHOP_OCCUPANCY_COUNT[square_index] as u32, Bitboard::from_raw(MAGIC_NUMBERS_BISHOP[square_index]));
+        square_index += 1;
+    }
+
+    result
+};
 
 const BISHOP_MASKS: [Bitboard; 64] = {
     let mut result = [Bitboard::EMPTY; 64];
@@ -35,7 +53,7 @@ const BISHOP_MASKS: [Bitboard; 64] = {
     result
 };
 
-#[cfg(not(target_feature = "bmi2"))]
+#[cfg(not(feature = "pext"))]
 const BISHOP_OCCUPANCY_COUNT: [usize; 64] = {
     let mut result = [0; 64];
     let mut rank = 0;
@@ -51,6 +69,7 @@ const BISHOP_OCCUPANCY_COUNT: [usize; 64] = {
     result
 };
 
+#[cfg(not(feature = "pext"))]
 const fn mask_bishop_attacks(square: Square) -> Bitboard {
     let mut result: u64 = 0;
     let bishop_position = (square.get_rank() as i32, square.get_file() as i32);
@@ -99,6 +118,7 @@ const fn mask_bishop_attacks(square: Square) -> Bitboard {
 }
 
 #[allow(unused)]
+#[cfg(not(feature = "pext"))]
 fn generate_bishop_attacks(square: Square, occupancy: Bitboard) -> Bitboard {
     let mut result: Bitboard = Bitboard::EMPTY;
     let bishop_position = (square.get_rank() as i32, square.get_file() as i32);
@@ -151,6 +171,7 @@ fn generate_bishop_attacks(square: Square, occupancy: Bitboard) -> Bitboard {
 }
 
 #[allow(unused)]
+#[cfg(not(feature = "pext"))]
 fn generate_occupancy(index: usize, bit_count: usize, attack_mask: Bitboard) -> Bitboard {
     let mut result = Bitboard::EMPTY;
     let mut mut_attack_mask = attack_mask;
@@ -167,7 +188,7 @@ fn generate_occupancy(index: usize, bit_count: usize, attack_mask: Bitboard) -> 
     result
 }
 
-#[cfg(not(target_feature = "bmi2"))]
+#[cfg(not(feature = "pext"))]
 const MAGIC_NUMBERS_BISHOP: [u64; 64] = [
     9300092178686681120,
     1284830893973760,

@@ -12,12 +12,12 @@ impl Perft {
 
         if PRINT {
             let pext = {
-                #[cfg(target_feature = "bmi2")]
+                #[cfg(feature = "pext")]
                 {
                     true
                 }
 
-                #[cfg(not(target_feature = "bmi2"))]
+                #[cfg(not(feature = "pext"))]
                 {
                     false
                 }
