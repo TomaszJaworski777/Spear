@@ -283,8 +283,8 @@ impl ChessBoard {
 
     pub fn draw_board(&self) {
         let piece_icons: [[&str; 6]; 2] = [
-            [" P ", " N ", " B ", " R ", " Q ", " K "],
-            [" p ", " n ", " b ", " r ", " q ", " k "],
+            [" P", " N", " B", " R", " Q", " K"],
+            [" p", " n", " b", " r", " q", " k"],
         ];
 
         let mut info = Vec::new();
@@ -314,20 +314,20 @@ impl ChessBoard {
             format!("Insufficient material: {}", self.is_insufficient_material());
         info.push(insufficient_material.as_str());
 
-        let mut result = " ------------------------\n".to_string();
+        let mut result = " -----------------\n".to_string();
         for rank in (0..8).rev() {
             result += "|".to_string().as_str();
             for file in 0..8 {
                 let square = Square::from_coords(rank, file);
                 if square == self.en_passant_square() {
-                    result += " x ";
+                    result += " x";
                     continue;
                 }
 
                 let piece_type = self.get_piece_on_square(square);
                 let piece_side = self.get_piece_color_on_square(square);
                 if piece_type == Piece::NONE {
-                    result += " . ";
+                    result += " .";
                 } else if piece_side == Side::BLACK {
                     result += piece_icons[usize::from(Side::BLACK)][usize::from(piece_type)]
                         .blue()
@@ -340,10 +340,10 @@ impl ChessBoard {
                         .as_str();
                 }
             }
-            result += format!("| {}", info[(7 - rank) as usize]).as_str();
+            result += format!(" | {}", info[(7 - rank) as usize]).as_str();
             result += "\n".to_string().as_str();
         }
-        result += " ------------------------\n".to_string().as_str();
+        result += " -----------------\n".to_string().as_str();
         println!("{}", result);
     }
 }
