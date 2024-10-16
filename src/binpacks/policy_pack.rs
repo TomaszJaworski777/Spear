@@ -71,7 +71,7 @@ impl PolicyPacked {
 }
 
 fn board_to_compressed(board: &ChessBoard) -> [Bitboard; 4] {
-    let mut result = [Bitboard::EMPTY; 4];
+    let mut result = [Bitboard::FULL; 4];
 
     board.get_occupancy().map(|square| {
         result[0].pop_bit(square);
