@@ -176,22 +176,22 @@ impl Bitboard {
     }
 
     fn get_bitboard_string(&self) -> String {
-        let mut result = " ------------------------\n".to_string();
+        let mut result = " -----------------\n".to_string();
         for rank in (0..8).rev() {
             result += "|";
             for file in 0..8 {
                 let square = Square::from_coords(rank, file);
                 result += if self.get_bit(square) {
-                    " 1 ".green()
+                    " 1".green()
                 } else {
-                    " 0 ".red()
+                    " 0".red()
                 }
                 .to_string()
                 .as_str();
             }
-            result += "|\n";
+            result += " |\n";
         }
-        result += " ------------------------\n";
+        result += " -----------------\n";
         result += &format!("  Bitboard: {}\n", self.get_raw());
         result
     }
